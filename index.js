@@ -23,6 +23,7 @@ async function run() {
         console.log("Connected To Db");
         const database = client.db('Travel_Now');
         const packageCollection = database.collection('Places')
+        const selectedCollection = database.collection('selected_pack')
 
         //GET Full API
         app.get('/packages', async (req, res) => {
@@ -30,13 +31,45 @@ async function run() {
             const packages = await cursor.toArray();
             res.send(packages);
         })
+        //GET selected Full API
+        app.get('/pack', async (req, res) => {
+            const cursor = selectedCollection.find({});
+            const package = await cursor.toArray();
+            res.send(package);
+        })
         // Get Single Item
         app.get('/packages/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const service = await packageCollection.findOne(query);
             res.json(service)
-        })
+        });
+
+
+        //// load added data according to user id get api
+        app.get("/package/:uid", async (req, res) => {
+            const uid = req.params.uid;
+            const query = { uid: uid };
+            const result = await selectedCollection.find(query).toArray();
+            res.json(result);
+        });
+        // add data to cart collection with additional info
+        app.post("/pack/add", async (req, res) => {
+            const package = req.body;
+            const result = await selectedCollection.insertOne(package);
+            res.json(result);
+        });
+
+        // delete data from cart delete api
+        app.delete("/pack/:id", async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { _id: (id) };
+            const result = await selectedCollection.deleteOne(query);
+            res.json(result);
+        });
+
+
 
     }
     finally {
