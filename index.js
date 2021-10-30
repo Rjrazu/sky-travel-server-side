@@ -5,7 +5,7 @@ const cors = require('cors');
 const ObjectId = require('mongodb').ObjectId;
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json())
@@ -24,6 +24,14 @@ async function run() {
         const database = client.db('Travel_Now');
         const packageCollection = database.collection('Places')
         const selectedCollection = database.collection('selected_pack')
+
+
+        // add data to cart collection with additional info
+        app.post("/packages/add", async (req, res) => {
+            const package = req.body;
+            const result = await packageCollection.insertOne(package);
+            res.json(result);
+        });
 
         //GET Full API
         app.get('/packages', async (req, res) => {
